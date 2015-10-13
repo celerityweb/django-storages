@@ -1,9 +1,13 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import posixpath
 import mimetypes
 from gzip import GzipFile
 import datetime
 from tempfile import SpooledTemporaryFile
+import hashlib
 
 try:
     from cStringIO import StringIO
@@ -420,6 +424,14 @@ class S3BotoStorage(Storage):
         return cleaned_name
 
     def _save_content(self, key, content, headers):
+        current_md5 = key.etag.strip('"')
+        new_md5 = hashlib.md5(content).hexdigest()
+        logger.debug('For %s, comparing md5s of %s and %s',
+                     key, current_md5, new_md5)
+        if current_md5 == new_md5:
+            logger.debug('File unchanged. Skipping.')
+            return
+
         # only pass backwards incompatible arguments if they vary from the default
         kwargs = {}
         if self.encryption:
