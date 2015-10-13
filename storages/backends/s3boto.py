@@ -424,7 +424,7 @@ class S3BotoStorage(Storage):
         return cleaned_name
 
     def _save_content(self, key, content, headers):
-        current_md5 = key.etag.strip('"')
+        current_md5 = key.etag.strip('"') if key.etag else ''
         new_md5 = hashlib.md5(content).hexdigest()
         logger.debug('For %s, comparing md5s of %s and %s',
                      key, current_md5, new_md5)
