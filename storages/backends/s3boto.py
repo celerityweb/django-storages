@@ -425,7 +425,8 @@ class S3BotoStorage(Storage):
 
     def _save_content(self, key, content, headers):
         current_md5 = key.etag.strip('"') if key.etag else ''
-        new_md5 = hashlib.md5(content).hexdigest()
+        content.seek(0)
+        new_md5 = hashlib.md5(content.read()).hexdigest()
         logger.debug('For %s, comparing md5s of %s and %s',
                      key, current_md5, new_md5)
         if current_md5 == new_md5:
